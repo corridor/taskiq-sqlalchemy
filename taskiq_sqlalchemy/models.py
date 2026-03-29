@@ -2,15 +2,21 @@ import datetime
 import typing as t
 
 import sqlalchemy as sa
+from sqlalchemy.dialects import oracle
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.sql import expression
 
 
 class BaseMixin:
-    # Sqlite doesn't allow BIGINT to be used as a primary key with autoincrement.
-    # See: https://stackoverflow.com/questions/18835740
     id: Mapped[int] = mapped_column(
-        (sa.BigInteger().with_variant(sa.Integer, "sqlite")),
+        (
+            sa.BigInteger()
+            # Sqlite doesn't allow BIGINT to be used as a primary key with autoincrement.
+            # See: https://stackoverflow.com/questions/18835740
+            .with_variant(sa.Integer, "sqlite")
+            .with_variant(oracle.NUMBER(38), "oracle")
+        ),
+        sa.Identity(),
         primary_key=True,
     )
 
@@ -45,7 +51,7 @@ class TaskiqScheduleMixin(BaseMixin):
 
     task_name: Mapped[str] = mapped_column(sa.String(255))
 
-    schedule: Mapped[t.Any] = mapped_column(sa.JSON)
+    schedule: Mapped[t.Any] = mapped_column(sa.JSON().with_variant(sa.CLOB(), "oracle"))
 
     updated_at: Mapped[datetime.datetime] = mapped_column(
         sa.DateTime,

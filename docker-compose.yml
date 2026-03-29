@@ -1,29 +1,47 @@
 services:
   postgres:
-    image: postgres:latest
+    image: postgres:10
     restart: always
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: taskiqasyncpg
-
+      POSTGRES_DB: taskiq
     volumes:
       - .:/postgres_data:/var/lib/postgresql/data/
-
     ports:
       - 5432:5432
-
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready", "-d", "taskiqasyncpg"]
+      test: ["CMD-SHELL", "pg_isready", "-U", "postgres", "-d", "taskiq"]
       interval: 3s
       timeout: 1s
       retries: 5
+    networks:
+      - default
 
+  oracle:
+    image: gvenzl/oracle-xe:21-slim
+    restart: always
+    environment:
+      ORACLE_DATABASE: taskiq
+      APP_USER: oracle
+      APP_USER_PASSWORD: oracle
+      ORACLE_PASSWORD: true
+    volumes:
+      - .:/oracle-data:/opt/oracle/oradata
+    ports:
+      - 1521:1521
+      - 5500:5500
+    healthcheck:
+      test: ["CMD-SHELL", "healthcheck.sh"]
+      interval: 3s
+      timeout: 1s
+      retries: 5
     networks:
       - default
 
 volumes:
   postgres_data:
+  oracle_data:
 networks:
   default:
     driver: bridge

@@ -6,7 +6,6 @@ Works on any SQLAlchemy async engine (Postgres, Oracle, MSSQL, SQLite, ...).
 
 import logging
 import typing as t
-from typing import TypeVar
 
 import sqlalchemy as sa
 from taskiq import AsyncResultBackend
@@ -16,7 +15,7 @@ from taskiq.serializers.pickle import PickleSerializer
 
 from taskiq_sqlalchemy.manager import SQLAlchemyManager
 
-_ReturnType = TypeVar("_ReturnType")
+_ReturnType = t.TypeVar("_ReturnType")
 logger = logging.getLogger(__name__)
 
 
@@ -112,8 +111,7 @@ class SQLAlchemyResultBackend(AsyncResultBackend[_ReturnType]):
 
     async def is_result_ready(self, task_id: str) -> bool:
         async with self.manager.engine.connect() as conn:
-            exists_stmt = sa.select(
+            stmt = sa.select(sa.literal(True)).where(
                 sa.exists().where(self.manager.result_cls.task_id == task_id)
             )
-
-            return (await conn.execute(exists_stmt)).scalar_one()
+            return bool(await conn.scalar(stmt))

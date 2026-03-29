@@ -18,14 +18,19 @@ _ENGINE_PARAMS: list = [
         id="sqlite+aiosqlite",
     ),
     pytest.param(
-        "postgresql+asyncpg://postgres:postgres@localhost:5432/postgres",
+        "postgresql+asyncpg://postgres:postgres@localhost:5432/taskiq",
         id="postgresql+asyncpg",
         marks=pytest.mark.postgresql,
     ),
     pytest.param(
-        "postgresql+psycopg://postgres:postgres@localhost:5432/postgres",
+        "postgresql+psycopg://postgres:postgres@localhost:5432/taskiq",
         id="postgresql+psycopg",
         marks=pytest.mark.postgresql,
+    ),
+    pytest.param(
+        "oracle+oracledb://oracle:oracle@localhost:1521/?service_name=taskiq",
+        id="oracle+oracledb",
+        marks=pytest.mark.oracle,
     ),
 ]
 
@@ -35,7 +40,7 @@ async def _try_connect(engine: AsyncEngine) -> t.AsyncGenerator[AsyncEngine, Non
     """Yield the engine; skip the test if the DB is unreachable."""
     try:
         async with engine.connect() as conn:
-            await conn.execute(sa.text("SELECT 1"))
+            await conn.execute(sa.select(1))
         yield engine
     except Exception as exc:
         await engine.dispose()
