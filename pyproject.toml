@@ -40,21 +40,17 @@ keywords = [
     "async",
     "postgresql",
     "asyncpg",
-    "psqlpy",
-    "psycopg3",
+        "psycopg3",
     "sqlalchemy",
 ]
 
-dependencies = ["taskiq>=0.11.7", 'sqlalchemy>=2']
+dependencies = ["taskiq>=0.11.7", 'sqlalchemy>=2', 'anyio>=4']
 
 [project.optional-dependencies]
-all = ["taskiq_sqlalchemy[postgresql]"]
+all = ["taskiq_sqlalchemy[postgresql,sqlite]"]
 
-postgresql = [
-    "asyncpg>=0.30.0",
-    "psqlpy>=0.11.3",
-    "psycopg[binary,pool]>=3.2.9",
-]
+postgresql = ["asyncpg", "psycopg[binary,pool]"]
+sqlite = ["aiosqlite"]
 
 [project.urls]
 Homepage = "https://github.com/corridor/taskiq-sqlalchemy"
@@ -63,14 +59,19 @@ Documentation = "https://github.com/corridor/taskiq-sqlalchemy"
 [dependency-groups]
 dev = [
     "ruff",
+    "ty",
     "pytest",
+    "pytest-anyio",
     "pytest-cov",
     "pytest-env",
     "asyncpg-stubs",
     "pre-commit",
     "pytest-xdist",
-    "anyio",
     "pytest-timeout",
+    # Drivers for result-backend tests
+    "aiosqlite", # SQLite async driver — zero external service
+    "asyncpg",   # PostgreSQL asyncpg driver (optional in local dev)
+    "psycopg",   # PostgreSQL psycopg3 driver (optional in local dev)
 ]
 
 [tool.setuptools.packages.find]
