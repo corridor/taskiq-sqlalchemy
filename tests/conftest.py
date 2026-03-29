@@ -5,9 +5,17 @@ Per-component fixtures live in their own sub-package conftest files
 (e.g. tests/result_backend/conftest.py).
 """
 
+import uuid
+
 import pytest
 
 
 @pytest.fixture(scope="session")
 def anyio_backend() -> str:
     return "asyncio"
+
+
+@pytest.fixture
+def task_id() -> str:
+    """A fresh UUID string for each test."""
+    return str(uuid.uuid4())

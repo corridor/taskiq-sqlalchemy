@@ -3,15 +3,15 @@ services:
     image: postgres:10
     restart: always
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: taskiq_user
+      POSTGRES_PASSWORD: taskiq_pwd
       POSTGRES_DB: taskiq
     volumes:
-      - .:/postgres_data:/var/lib/postgresql/data/
+      - postgres_data:/var/lib/postgresql/data/
     ports:
       - 5432:5432
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready", "-U", "postgres", "-d", "taskiq"]
+      test: ["CMD-SHELL", "pg_isready", "-U", "taskiq_user", "-d", "taskiq"]
       interval: 3s
       timeout: 1s
       retries: 5
@@ -23,11 +23,10 @@ services:
     restart: always
     environment:
       ORACLE_DATABASE: taskiq
-      APP_USER: oracle
-      APP_USER_PASSWORD: oracle
-      ORACLE_PASSWORD: true
+      ORACLE_PASSWORD: "PasswoRd"
     volumes:
-      - .:/oracle-data:/opt/oracle/oradata
+      - oracle_data:/opt/oracle/oradata
+      - ./initdb.d:/container-entrypoint-initdb.d:ro
     ports:
       - 1521:1521
       - 5500:5500

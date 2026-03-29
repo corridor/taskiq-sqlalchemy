@@ -1,9 +1,7 @@
 import typing as t
 import uuid
-from contextlib import asynccontextmanager
 
 import pytest
-import sqlalchemy as sa
 from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 from sqlalchemy.orm import DeclarativeBase
 from taskiq import TaskiqResult
@@ -18,33 +16,21 @@ _ENGINE_PARAMS: list = [
         id="sqlite+aiosqlite",
     ),
     pytest.param(
-        "postgresql+asyncpg://postgres:postgres@localhost:5432/taskiq",
+        "postgresql+asyncpg://taskiq_user:taskiq_pwd@localhost:5432/taskiq",
         id="postgresql+asyncpg",
         marks=pytest.mark.postgresql,
     ),
     pytest.param(
-        "postgresql+psycopg://postgres:postgres@localhost:5432/taskiq",
+        "postgresql+psycopg://taskiq_user:taskiq_pwd@localhost:5432/taskiq",
         id="postgresql+psycopg",
         marks=pytest.mark.postgresql,
     ),
     pytest.param(
-        "oracle+oracledb://oracle:oracle@localhost:1521/?service_name=taskiq",
+        "oracle+oracledb://taskiq_user:taskiq_pwd@localhost:1521/?service_name=taskiq",
         id="oracle+oracledb",
         marks=pytest.mark.oracle,
     ),
 ]
-
-
-@asynccontextmanager
-async def _try_connect(engine: AsyncEngine) -> t.AsyncGenerator[AsyncEngine, None]:
-    """Yield the engine; skip the test if the DB is unreachable."""
-    try:
-        async with engine.connect() as conn:
-            await conn.execute(sa.select(1))
-        yield engine
-    except Exception as exc:
-        await engine.dispose()
-        pytest.skip(f"Database not reachable ({engine.url.drivername}): {exc}")
 
 
 @pytest.fixture(params=_ENGINE_PARAMS)
@@ -61,8 +47,7 @@ async def async_engine(
     url: str = request.param
     engine = create_async_engine(url)
     try:
-        async with _try_connect(engine):
-            yield engine
+        yield engine
     finally:
         await engine.dispose()
 
@@ -138,12 +123,6 @@ async def keep_results_false_backend(
     finally:
         async with async_engine.begin() as conn:
             await conn.run_sync(_Base.metadata.drop_all)
-
-
-@pytest.fixture
-def task_id() -> str:
-    """A fresh UUID string for each test."""
-    return str(uuid.uuid4())
 
 
 @pytest.fixture
