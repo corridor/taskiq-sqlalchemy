@@ -10,3 +10,6 @@ wheels/
 .venv
 .vscode
 .env
+
+# Log files
+*.log
