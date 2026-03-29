@@ -93,7 +93,8 @@ universal = true
 
 [tool.pytest.ini_options]
 markers = [
-    "postgresql: tests that require a running PostgreSQL server (skip if unavailable)",
+    "postgresql: tests that require a running PostgreSQL server",
+    "oracle: tests that require a running OracleDB server",
 ]
 
 [tool.ruff.lint]
