@@ -40,7 +40,7 @@ keywords = [
     "async",
     "postgresql",
     "asyncpg",
-        "psycopg3",
+    "psycopg3",
     "sqlalchemy",
 ]
 
@@ -89,6 +89,11 @@ required-environments = [
 [tool.uv.pip]
 universal = true
 
+[tool.pytest.ini_options]
+markers = [
+    "postgresql: tests that require a running PostgreSQL server (skip if unavailable)",
+]
+
 [tool.ruff.lint]
 select = [
     "E",   # Error
@@ -97,7 +102,6 @@ select = [
     "C90", # McCabe complexity
     "I",   # Isort
     "N",   # pep8-naming
-    "D",   # Pydocstyle
     "ANN", # Pytype annotations
     "S",   # Bandit
     "B",   # Bugbear
