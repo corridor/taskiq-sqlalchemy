@@ -234,3 +234,54 @@ jobs:
       #     files: coverage-mssql.xml
       #     flags: mssql
       #     fail_ci_if_error: false
+
+  test-mysql:
+    name: "Tests · MySQL"
+    runs-on: ubuntu-latest
+    needs: lint
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Start MySQL service
+        run: |
+          cd docker
+          docker compose up -d mysql
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Set up Python
+        run: uv python install 3.12
+
+      - name: Install dependencies
+        run: uv sync --dev
+
+      - name: Wait for MySQL to be healthy
+        run: |
+          cd docker
+          echo "Waiting for MySQL service to become healthy..."
+          for i in $(seq 1 60); do
+            if [ "$(docker compose ps mysql --format json | jq -r '.Health')" = "healthy" ]; then
+              echo "MySQL is healthy after ${i}s"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "MySQL did not become healthy within 120 seconds"
+          exit 1
+
+      - name: Run mysql tests
+        run: |
+          uv run pytest tests/ -v \
+            -m "mysql" \
+            --strict-markers --maxfail=10 \
+            --cov=taskiq_sqlalchemy \
+            --cov-report=xml:coverage-mysql.xml
+
+      # - name: Upload coverage
+      #   uses: codecov/codecov-action@v5
+      #   with:
+      #     files: coverage-mysql.xml
+      #     flags: mysql
+      #     fail_ci_if_error: false
