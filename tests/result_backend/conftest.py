@@ -31,6 +31,11 @@ _ENGINE_PARAMS: list = [
         id="oracle+oracledb",
         marks=pytest.mark.oracle,
     ),
+    pytest.param(
+        "mssql+aioodbc://sa:gOxN5hbl7geTwgvS@localhost:1433/taskiq?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes",
+        id="mssql+aioodbc",
+        marks=pytest.mark.mssql,
+    ),
 ]
 
 
