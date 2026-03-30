@@ -23,6 +23,7 @@ from taskiq_sqlalchemy.adapters.polling import PollingAdapter
 from taskiq_sqlalchemy.broker import SQLAlchemyBroker
 from taskiq_sqlalchemy.manager import SQLAlchemyManager
 
+
 pytestmark = pytest.mark.anyio
 
 
@@ -79,7 +80,7 @@ async def polling_broker(  # type: ignore[override]
 async def _collect(
     broker: SQLAlchemyBroker,
     n: int,
-    timeout: float = 5.0,
+    collect_timeout: float = 5.0,
 ) -> list[AckableMessage]:
     """
     Drive broker.listen() and collect the first ``n`` messages.
@@ -93,7 +94,7 @@ async def _collect(
             if len(collected) >= n:
                 return
 
-    with anyio.fail_after(timeout):
+    with anyio.fail_after(collect_timeout):
         await _drain()
 
     return collected
@@ -121,6 +122,7 @@ async def test_listen_multiple_messages_in_order(
     """
     Kick 3 messages; collect 3 via listen(); all payloads present, no duplicates.
     """
+    message_count = 3
     messages_sent = [
         BrokerMessage(
             task_id=str(uuid.uuid4()),
@@ -128,7 +130,7 @@ async def test_listen_multiple_messages_in_order(
             message=f"payload-{i}".encode(),
             labels={},
         )
-        for i in range(3)
+        for i in range(message_count)
     ]
 
     for msg in messages_sent:
@@ -136,7 +138,7 @@ async def test_listen_multiple_messages_in_order(
 
     received = await _collect(polling_broker, n=3)
 
-    assert len(received) == 3
+    assert len(received) == message_count
     received_payloads = {msg.data for msg in received}
     expected_payloads = {msg.message for msg in messages_sent}
     assert received_payloads == expected_payloads
@@ -190,12 +192,10 @@ async def test_listen_channel_isolation(
         with anyio.move_on_after(0.3):
             await _try_listen_b()
 
-        assert received_by_b == [], (
-            "broker_b must not receive messages sent on channel_a"
-        )
+        assert received_by_b == [], "broker_b must not receive messages sent on channel_a"
 
         # Confirm broker_a does receive it
-        received_by_a = await _collect(broker_a, n=1, timeout=3.0)
+        received_by_a = await _collect(broker_a, n=1, collect_timeout=3.0)
         assert received_by_a[0].data == msg_a.message
 
     finally:

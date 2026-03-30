@@ -22,9 +22,8 @@ from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 
 from taskiq_sqlalchemy.adapters.oracle import OracleDialectAdapter, _oracle_queue_name
 
-_ORA_URL = (
-    "oracle+oracledb://taskiq_user:taskiq_pwd@localhost:1521/?service_name=taskiq"
-)
+
+_ORA_URL = "oracle+oracledb://taskiq_user:taskiq_pwd@localhost:1521/?service_name=taskiq"
 
 
 @pytest.fixture
@@ -158,7 +157,6 @@ async def test_listen_stops_on_stop_event(
 
     collected: list[str] = []
     with anyio.fail_after(5.0):
-        async for p in adapter.listen("test_ora_channel"):
-            collected.append(p)
+        collected.extend([p async for p in adapter.listen("test_ora_channel")])
 
     assert collected == []

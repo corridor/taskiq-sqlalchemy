@@ -15,6 +15,7 @@ from taskiq.serializers.pickle import PickleSerializer
 
 from taskiq_sqlalchemy.manager import SQLAlchemyManager
 
+
 _ReturnType = t.TypeVar("_ReturnType")
 logger = logging.getLogger(__name__)
 
@@ -50,7 +51,7 @@ class SQLAlchemyResultBackend(AsyncResultBackend[_ReturnType]):
             # called at most once per task_id.
             dialect = async_engine.dialect.name
             if dialect in ("postgresql",):
-                from sqlalchemy.dialects.postgresql import insert as pg_insert
+                from sqlalchemy.dialects.postgresql import insert as pg_insert  # noqa: PLC0415
 
                 stmt = (
                     pg_insert(self.manager.result_cls)
@@ -72,8 +73,8 @@ class SQLAlchemyResultBackend(AsyncResultBackend[_ReturnType]):
                 # written exactly once per task_id in normal operation)
                 await conn.execute(
                     sa.delete(self.manager.result_cls).where(
-                        self.manager.result_cls.task_id == task_id
-                    )
+                        self.manager.result_cls.task_id == task_id,
+                    ),
                 )
                 stmt = sa.insert(self.manager.result_cls).values(
                     task_id=task_id,
@@ -83,14 +84,16 @@ class SQLAlchemyResultBackend(AsyncResultBackend[_ReturnType]):
             await conn.execute(stmt)
 
     async def get_result(
-        self, task_id: str, with_logs: bool = False
+        self,
+        task_id: str,
+        with_logs: bool = False,  # noqa: FBT001, FBT002 -- Keep same signature as parent
     ) -> TaskiqResult[_ReturnType]:
         async with self.manager.engine.begin() as conn:
             row = (
                 await conn.execute(
                     sa.select(self.manager.result_cls).where(
-                        self.manager.result_cls.task_id == task_id
-                    )
+                        self.manager.result_cls.task_id == task_id,
+                    ),
                 )
             ).fetchone()
 
@@ -100,8 +103,8 @@ class SQLAlchemyResultBackend(AsyncResultBackend[_ReturnType]):
             if not self.keep_results:
                 await conn.execute(
                     sa.delete(self.manager.result_cls).where(
-                        self.manager.result_cls.task_id == task_id
-                    )
+                        self.manager.result_cls.task_id == task_id,
+                    ),
                 )
 
         result: TaskiqResult[_ReturnType] = self.serializer.loadb(row.result)
@@ -111,7 +114,7 @@ class SQLAlchemyResultBackend(AsyncResultBackend[_ReturnType]):
 
     async def is_result_ready(self, task_id: str) -> bool:
         async with self.manager.engine.connect() as conn:
-            stmt = sa.select(sa.literal(True)).where(
-                sa.exists().where(self.manager.result_cls.task_id == task_id)
+            stmt = sa.select(sa.literal(value=True)).where(
+                sa.exists().where(self.manager.result_cls.task_id == task_id),
             )
             return bool(await conn.scalar(stmt))

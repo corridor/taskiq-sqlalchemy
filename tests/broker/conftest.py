@@ -4,7 +4,7 @@ Fixtures for broker tests.
 """
 
 import asyncio
-from typing import AsyncGenerator
+from collections.abc import AsyncGenerator
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
@@ -12,6 +12,7 @@ from sqlalchemy.orm import DeclarativeBase
 from taskiq import BrokerMessage
 
 from taskiq_sqlalchemy.adapters.abc import DialectAdapter
+from taskiq_sqlalchemy.adapters.polling import PollingAdapter
 from taskiq_sqlalchemy.broker import SQLAlchemyBroker
 from taskiq_sqlalchemy.manager import SQLAlchemyManager
 
@@ -142,14 +143,13 @@ async def polling_broker(
     Broker wired with the real PollingAdapter — for end-to-end listen() tests.
     Works with any engine (SQLite always, Postgres when available).
     """
-    from taskiq_sqlalchemy.adapters.polling import PollingAdapter
 
     adapter = PollingAdapter(
         manager_with_schema.engine,
         queue_cls=manager_with_schema.queue_cls,
     )
     # Speed up polling for tests
-    adapter.poll_interval = 0.05
+    adapter.POLL_INTERVAL_SECS = 0.05
 
     b = SQLAlchemyBroker(
         manager_with_schema,

@@ -15,6 +15,7 @@ from sqlalchemy.ext.asyncio import AsyncEngine
 
 from taskiq_sqlalchemy.adapters.abc import DialectAdapter
 
+
 logger = logging.getLogger(__name__)
 
 # Maximum characters in an Oracle AQ queue name (safe for all Oracle versions)
@@ -54,7 +55,7 @@ class OracleDialectAdapter(DialectAdapter):
             raise RuntimeError(
                 "OracleDialectAdapter requires python-oracledb Thin mode. "
                 "Do not call oracledb.init_oracle_client() before using this adapter. "
-                "Asyncio support is only available in Thin mode."
+                "Asyncio support is only available in Thin mode.",
             )
 
         await self.ensure_queue("taskiq")
@@ -168,7 +169,7 @@ class OracleDialectAdapter(DialectAdapter):
             # This ensures the signal is visible to dequeuing workers immediately.
             queue.enqoptions.visibility = oracledb.ENQ_IMMEDIATE
             await queue.enqone(
-                driver_connection.msgproperties(payload=payload.encode())
+                driver_connection.msgproperties(payload=payload.encode()),
             )
             logger.debug(
                 "OracleDialectAdapter: enqueued task_id=%r on queue %r",
@@ -227,7 +228,8 @@ class OracleDialectAdapter(DialectAdapter):
                     # Any other error - log and re-raise to let the broker decide
                     # whether to restart the listener.
                     logger.exception(
-                        "OracleDialectAdapter: dequeue error on queue %r", queue_name
+                        "OracleDialectAdapter: dequeue error on queue %r",
+                        queue_name,
                     )
                     raise
 
@@ -249,5 +251,6 @@ class OracleDialectAdapter(DialectAdapter):
                 yield payload
 
             logger.debug(
-                "OracleDialectAdapter: dequeue loop exited for queue %r", queue_name
+                "OracleDialectAdapter: dequeue loop exited for queue %r",
+                queue_name,
             )

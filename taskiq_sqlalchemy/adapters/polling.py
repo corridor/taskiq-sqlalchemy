@@ -44,7 +44,7 @@ class PollingAdapter(DialectAdapter):
                     sa.select(self.queue_cls.task_id)
                     .filter_by(channel=channel)
                     .limit(self.POLL_RESULT_LIMIT)
-                    .with_for_update(skip_locked=True)
+                    .with_for_update(skip_locked=True),
                 )
                 rows = result.fetchall()
                 for row in rows:

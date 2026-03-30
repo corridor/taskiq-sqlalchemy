@@ -8,6 +8,7 @@ from taskiq.serializers.pickle import PickleSerializer
 from taskiq_sqlalchemy.manager import SQLAlchemyManager
 from taskiq_sqlalchemy.result_backend import SQLAlchemyResultBackend
 
+
 pytestmark = pytest.mark.anyio
 
 
@@ -26,8 +27,8 @@ async def test_set_result_stores_row(
         row = (
             await conn.execute(
                 sa.select(manager.result_cls).where(
-                    manager.result_cls.task_id == task_id
-                )
+                    manager.result_cls.task_id == task_id,
+                ),
             )
         ).fetchone()
 
@@ -52,8 +53,8 @@ async def test_set_result_error_flag(
         row = (
             await conn.execute(
                 sa.select(manager.result_cls).where(
-                    manager.result_cls.task_id == task_id
-                )
+                    manager.result_cls.task_id == task_id,
+                ),
             )
         ).fetchone()
 
@@ -83,8 +84,8 @@ async def test_set_result_idempotent_overwrite(
         rows = (
             await conn.execute(
                 sa.select(manager.result_cls).where(
-                    manager.result_cls.task_id == task_id
-                )
+                    manager.result_cls.task_id == task_id,
+                ),
             )
         ).fetchall()
 
@@ -111,8 +112,8 @@ async def test_set_result_serialization_roundtrip(
         row = (
             await conn.execute(
                 sa.select(manager.result_cls).where(
-                    manager.result_cls.task_id == task_id
-                )
+                    manager.result_cls.task_id == task_id,
+                ),
             )
         ).fetchone()
 

@@ -12,6 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 
 from taskiq_sqlalchemy.adapters.postgresql import PostgresDialectAdapter
 
+
 pytestmark = [pytest.mark.anyio, pytest.mark.postgresql]
 
 _PG_URL = "postgresql+asyncpg://taskiq_user:taskiq_pwd@localhost:5432/taskiq"
@@ -65,7 +66,8 @@ async def test_notify_sends_pg_notify(pg_engine: AsyncEngine) -> None:
         # Give Postgres a moment to deliver the notification
         with anyio.fail_after(3.0):
             while payload not in received:
-                await asyncio.sleep(0.05)
+                with anyio.move_on_after(0.05):
+                    await anyio.Event().wait()
     finally:
         await driver_conn.remove_listener(channel, _on_notification)
         raw_conn.close()
@@ -95,7 +97,8 @@ async def test_listen_receives_notification(pg_adapter: PostgresDialectAdapter) 
 
         with anyio.fail_after(5.0):
             while not received:
-                await asyncio.sleep(0.05)
+                with anyio.move_on_after(0.05):
+                    await anyio.Event().wait()
         tg.cancel_scope.cancel()
 
     assert received == [payload]

@@ -15,6 +15,7 @@ from taskiq_sqlalchemy.adapters import resolve_adapter
 from taskiq_sqlalchemy.adapters.abc import DialectAdapter
 from taskiq_sqlalchemy.manager import SQLAlchemyManager
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -31,7 +32,7 @@ class SQLAlchemyBroker(AsyncBroker):
         *,
         channel_name: str = "taskiq",
         adapter: t.Optional[DialectAdapter] = None,
-        **kwargs: t.Any,
+        **kwargs,
     ) -> None:
         super().__init__(**kwargs)
         self.manager = manager
@@ -73,7 +74,7 @@ class SQLAlchemyBroker(AsyncBroker):
                     channel=self.channel_name,
                     task_name=message.task_name,
                     message=serialised,
-                )
+                ),
             )
 
         # Notify outside the transaction so the row is visible to workers
@@ -100,7 +101,7 @@ class SQLAlchemyBroker(AsyncBroker):
             result = await conn.execute(
                 sa.delete(self.manager.queue_cls)
                 .filter_by(task_id=task_id, channel=self.channel_name)
-                .returning(self.manager.queue_cls.message)
+                .returning(self.manager.queue_cls.message),
             )
             row = result.first()
             if row is None:

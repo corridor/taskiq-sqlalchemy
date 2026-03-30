@@ -18,6 +18,7 @@ from sqlalchemy.orm import DeclarativeBase
 from taskiq_sqlalchemy.adapters.polling import PollingAdapter
 from taskiq_sqlalchemy.manager import SQLAlchemyManager
 
+
 pytestmark = pytest.mark.anyio
 
 
@@ -75,7 +76,7 @@ async def _insert_queue_rows(
                     channel=channel,
                     task_name="tests.fake_task",
                     message=b"{}",
-                )
+                ),
             )
     return ids
 
@@ -89,7 +90,7 @@ async def test_polling_notify_is_noop(
     async with polling_manager.engine.connect() as conn:
         count_before = (
             await conn.execute(
-                sa.select(sa.func.count()).select_from(polling_manager.queue_cls)
+                sa.select(sa.func.count()).select_from(polling_manager.queue_cls),
             )
         ).scalar()
 
@@ -99,7 +100,7 @@ async def test_polling_notify_is_noop(
     async with polling_manager.engine.connect() as conn:
         count_after = (
             await conn.execute(
-                sa.select(sa.func.count()).select_from(polling_manager.queue_cls)
+                sa.select(sa.func.count()).select_from(polling_manager.queue_cls),
             )
         ).scalar()
 
@@ -118,7 +119,9 @@ async def test_poll_yields_task_ids_from_db(
     channel = "test_channel"
     insert_count = 3
     inserted_ids = await _insert_queue_rows(
-        polling_manager, channel=channel, count=insert_count
+        polling_manager,
+        channel=channel,
+        count=insert_count,
     )
 
     collected: list[str] = []
@@ -166,8 +169,7 @@ async def test_poll_stops_on_stop_event(
 
     collected: list[str] = []
     with anyio.fail_after(2.0):
-        async for task_id in adapter.listen("any_channel"):
-            collected.append(task_id)
+        collected.extend([task_id async for task_id in adapter.listen("any_channel")])
 
     # The generator exited without hanging
     assert collected == []

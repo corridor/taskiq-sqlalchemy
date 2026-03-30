@@ -7,6 +7,7 @@ from taskiq import TaskiqResult
 
 from taskiq_sqlalchemy.result_backend import SQLAlchemyResultBackend
 
+
 pytestmark = pytest.mark.anyio
 
 
@@ -58,9 +59,7 @@ async def test_get_result_logs_preserved_when_requested(
 
     recovered = await result_backend.get_result(task_id=task_id, with_logs=True)
 
-    assert recovered.log == result_with_logs.log, (
-        "Log should be present when with_logs=True"
-    )
+    assert recovered.log == result_with_logs.log, "Log should be present when with_logs=True"
 
 
 async def test_get_result_keep_results_false_deletes_row(

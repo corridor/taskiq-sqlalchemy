@@ -9,6 +9,7 @@ from taskiq import TaskiqResult
 from taskiq_sqlalchemy.manager import SQLAlchemyManager
 from taskiq_sqlalchemy.result_backend import SQLAlchemyResultBackend
 
+
 # Map of (pytest param id) → (SQLAlchemy async URL)
 _ENGINE_PARAMS: list = [
     pytest.param(
@@ -113,7 +114,8 @@ async def keep_results_false_backend(
         await conn.run_sync(_Base.metadata.create_all)
 
     backend: SQLAlchemyResultBackend[t.Any] = SQLAlchemyResultBackend(
-        manager, keep_results=False
+        manager,
+        keep_results=False,
     )
 
     try:

@@ -91,44 +91,59 @@ markers = [
     "oracle: tests that require a running OracleDB server",
 ]
 
+[tool.ruff]
+line-length = 120
+output-format = "grouped"
+target-version = "py39"
+
 [tool.ruff.lint]
 select = [
-    "E",   # Error
-    "F",   # Pyflakes
-    "W",   # Pycodestyle
-    "C90", # McCabe complexity
-    "I",   # Isort
-    "N",   # pep8-naming
-    "ANN", # Pytype annotations
-    "S",   # Bandit
-    "B",   # Bugbear
-    "COM", # Commas
-    "C4",  # Comprehensions
-    "ISC", # Implicit string concat
-    "PIE", # Unnecessary code
-    "T20", # Catch prints
-    "PYI", # validate pyi files
-    "Q",   # Checks for quotes
-    "RSE", # Checks raise statements
-    "RET", # Checks return statements
-    "SLF", # Self checks
-    "SIM", # Simplificator
-    "PTH", # Pathlib checks
-    "ERA", # Checks for commented out code
-    "PL",  # PyLint checks
-    "RUF", # Specific to Ruff checks
+    "A",      # flake8-builtins
+    "ASYNC",  # flake8-async
+    "ANN",    # flake8-annotations
+    "B",      # flake8-bugbear
+    "C4",     # flake8-comprehensions
+    "COM",    # flake8-commas
+    "E",      # pycodestyle - errors
+    "EXE",    # flake8-executable
+    "F",      # pyflakes
+    "FBT",    # flake8-boolean-trap
+    "FLY",    # flynt
+    "G",      # flake8-logging-format
+    "I",      # isort
+    "ICN",    # flake8-import-conventions
+    "ISC",    # flake8-implicit-str-concat
+    "LOG",    # flake8-logging
+    "N",      # pep8-naming
+    "PERF",   # perflint
+    "PIE",    # flake8-pie
+    "PGH",    # pygrep-hooks
+    "PLC",    # pylint-convention
+    "PLE",    # pylint-error
+    "PLR",    # pylint-refactor
+    "PT",     # flake8-pytest-style
+    "PTH",    # flake8-use-pathlib
+    "PYI024", # flake8-pyi
+    "Q",      # flake8-quotes
+    "RET",    # flake8-return
+    "RSE",    # flake8-raise
+    "RUF",    # ruff specific rules
+    "S",      # flake8-bandit
+    "SIM",    # flake8-simplify
+    "SLOT",   # flake8-slots
+    "T10",    # flake8-debugger
+    "TCH",    # flake8-type-checking
+    "TID",    # flake8-tidy-imports
+    "TRY",    # tryceratops
+    "UP",     # pyupgrade
+    "W",      # pycodestyle - warnings
+    "YTT",    # flake8-2020
 ]
 ignore = [
-    "D105",    # Missing docstring in magic method
-    "D107",    # Missing docstring in __init__
-    "D212",    # Multi-line docstring summary should start at the first line
-    "D401",    # First line should be in imperative mood
-    "D104",    # Missing docstring in public package
-    "D100",    # Missing docstring in public module
-    "ANN401",  # typing.Any are disallowed in `**kwargs
-    "PLR0913", # Too many arguments for function call
-    "D106",    # Missing docstring in public nested class
-    "COM812",  # Use of assert detected
+    'TRY003', # Allow exceptions messages outside of Exception classes
+    "ANN002", # Skip typing for *args as they are hard to type
+    "ANN003", # Skip typing for **kwargs as they are hard to type
+    "COM812", # Do not force trailing commas
 ]
 
 [tool.ruff.lint.pydocstyle]
@@ -136,6 +151,19 @@ convention = "google"
 
 [tool.ruff.lint.flake8-bugbear]
 extend-immutable-calls = ["taskiq_dependencies.Depends", "taskiq.TaskiqDepends"]
+
+[tool.ruff.lint.flake8-tidy-imports.banned-api]
+"__future__.annotations".msg = "__future__.annotations is discouraged. See PEP-649 and PEP-749"
+
+[tool.ruff.lint.flake8-import-conventions.extend-aliases]
+"typing" = "t"
+
+[tool.ruff.lint.isort]
+known-first-party = ["taskiq_sqlalchemy*"]
+combine-as-imports = true
+order-by-type = false
+lines-after-imports = 2
+case-sensitive = true
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = [

@@ -21,7 +21,8 @@ class BaseMixin:
     )
 
     created_at: Mapped[datetime.datetime] = mapped_column(
-        sa.DateTime, server_default=sa.func.now()
+        sa.DateTime,
+        server_default=sa.func.now(),
     )
 
 
@@ -42,7 +43,8 @@ class TaskiqResultMixin(BaseMixin):
 
     result: Mapped[t.Optional[bytes]] = mapped_column(sa.LargeBinary)
     is_err: Mapped[bool] = mapped_column(
-        sa.Boolean(name="bool_is_err"), server_default=expression.false()
+        sa.Boolean(name="bool_is_err"),
+        server_default=expression.false(),
     )
 
 

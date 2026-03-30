@@ -13,6 +13,7 @@ from taskiq import BrokerMessage
 from taskiq_sqlalchemy.broker import SQLAlchemyBroker
 from taskiq_sqlalchemy.manager import SQLAlchemyManager
 
+
 pytestmark = pytest.mark.anyio
 
 
@@ -31,7 +32,7 @@ async def _insert_queue_row(
                 channel=channel,
                 task_name=task_name,
                 message=message_bytes,
-            )
+            ),
         )
 
 
@@ -63,8 +64,8 @@ async def test_fetch_message_returns_ackable(
         row = (
             await conn.execute(
                 sa.select(manager_with_schema.queue_cls).where(
-                    manager_with_schema.queue_cls.task_id == broker_message.task_id
-                )
+                    manager_with_schema.queue_cls.task_id == broker_message.task_id,
+                ),
             )
         ).fetchone()
     assert row is None, "Row should be deleted after _fetch_message"
@@ -159,6 +160,4 @@ async def test_fetch_message_atomic_double_claim(
     )
 
     non_none = [r for r in results if r is not None]
-    assert len(non_none) == 1, (
-        f"Exactly one claim should succeed; got {len(non_none)} non-None results"
-    )
+    assert len(non_none) == 1, f"Exactly one claim should succeed; got {len(non_none)} non-None results"

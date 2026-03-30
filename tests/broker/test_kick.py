@@ -14,6 +14,7 @@ from taskiq_sqlalchemy.manager import SQLAlchemyManager
 
 from .conftest import FakeAdapter
 
+
 pytestmark = pytest.mark.anyio
 
 
@@ -29,8 +30,8 @@ async def test_kick_inserts_row(
         row = (
             await conn.execute(
                 sa.select(manager_with_schema.queue_cls).where(
-                    manager_with_schema.queue_cls.task_id == broker_message.task_id
-                )
+                    manager_with_schema.queue_cls.task_id == broker_message.task_id,
+                ),
             )
         ).fetchone()
 
@@ -53,8 +54,8 @@ async def test_kick_serializes_broker_message(
         row = (
             await conn.execute(
                 sa.select(manager_with_schema.queue_cls).where(
-                    manager_with_schema.queue_cls.task_id == broker_message.task_id
-                )
+                    manager_with_schema.queue_cls.task_id == broker_message.task_id,
+                ),
             )
         ).fetchone()
 
@@ -101,8 +102,8 @@ async def test_kick_notify_outside_transaction(
                 row = (
                     await conn.execute(
                         sa.select(manager_with_schema.queue_cls).where(
-                            manager_with_schema.queue_cls.task_id == payload
-                        )
+                            manager_with_schema.queue_cls.task_id == payload,
+                        ),
                     )
                 ).fetchone()
                 row_visible_during_notify = row is not None
@@ -120,9 +121,7 @@ async def test_kick_notify_outside_transaction(
     finally:
         await b.shutdown()
 
-    assert row_visible_during_notify, (
-        "Row must be committed to DB before notify() is called"
-    )
+    assert row_visible_during_notify, "Row must be committed to DB before notify() is called"
 
 
 async def test_kick_multiple_messages(
@@ -132,6 +131,7 @@ async def test_kick_multiple_messages(
 ) -> None:
     """Kicking N messages creates exactly N rows with distinct task_ids."""
 
+    message_count = 5
     messages = [
         BrokerMessage(
             task_id=str(uuid.uuid4()),
@@ -139,7 +139,7 @@ async def test_kick_multiple_messages(
             message=b'{"args": [], "kwargs": {}}',
             labels={},
         )
-        for _ in range(5)
+        for _ in range(message_count)
     ]
 
     for msg in messages:
@@ -149,14 +149,14 @@ async def test_kick_multiple_messages(
         rows = (
             await conn.execute(
                 sa.select(manager_with_schema.queue_cls).where(
-                    manager_with_schema.queue_cls.channel == broker.channel_name
-                )
+                    manager_with_schema.queue_cls.channel == broker.channel_name,
+                ),
             )
         ).fetchall()
 
-    assert len(rows) == 5
+    assert len(rows) == message_count
     stored_ids = {row.task_id for row in rows}
     expected_ids = {msg.task_id for msg in messages}
     assert stored_ids == expected_ids
     # notify() called once per message
-    assert len(fake_adapter.notify_calls) == 5
+    assert len(fake_adapter.notify_calls) == message_count

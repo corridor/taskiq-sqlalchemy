@@ -1,9 +1,6 @@
-from __future__ import annotations
-
 import logging
 import math
 import typing as t
-from typing import AsyncGenerator
 
 import anyio
 import anyio.abc
@@ -12,6 +9,7 @@ from anyio.streams.memory import MemoryObjectReceiveStream, MemoryObjectSendStre
 from sqlalchemy.ext.asyncio import AsyncEngine
 
 from taskiq_sqlalchemy.adapters.abc import DialectAdapter
+
 
 logger = logging.getLogger(__name__)
 
@@ -54,7 +52,6 @@ class PostgresDialectAdapter(DialectAdapter):
             except Exception:
                 logger.exception(
                     "PostgresDialectAdapter: error closing listener conn",
-                    exc_info=True,
                 )
             self._listener_conn = None
 
@@ -65,10 +62,10 @@ class PostgresDialectAdapter(DialectAdapter):
                 {"channel": channel, "payload": payload},
             )
 
-    def listen(self, channel: str) -> AsyncGenerator[str, None]:
+    def listen(self, channel: str) -> t.AsyncGenerator[str, None]:
         return self._listen_gen(channel)
 
-    async def _listen_gen(self, channel: str) -> AsyncGenerator[str, None]:
+    async def _listen_gen(self, channel: str) -> t.AsyncGenerator[str, None]:
         if self._listener_conn is None or self._listener_conn.driver_connection is None:
             raise RuntimeError("Connection not available for listen()")
 
@@ -76,7 +73,7 @@ class PostgresDialectAdapter(DialectAdapter):
         # must never block the callback.  If the consumer is slow the buffer
         # grows; that's acceptable — tasks are short-lived string IDs.
         self._send_stream, self._recv_stream = anyio.create_memory_object_stream[str](
-            max_buffer_size=math.inf
+            max_buffer_size=math.inf,
         )
 
         def _callback(conn: object, pid: int, channel_: str, payload: str) -> None:
@@ -88,8 +85,7 @@ class PostgresDialectAdapter(DialectAdapter):
                 # Should never happen with max_buffer_size=inf, but guard
                 # defensively to prevent a silent drop crashing the callback.
                 logger.warning(
-                    "PostgresDialectAdapter: notification buffer full on channel %r; "
-                    "payload %r dropped",
+                    "PostgresDialectAdapter: notification buffer full on channel %r; payload %r dropped",
                     channel_,
                     payload,
                 )
@@ -109,12 +105,12 @@ class PostgresDialectAdapter(DialectAdapter):
             if self._listener_conn is not None:
                 try:
                     await self._listener_conn.driver_connection.remove_listener(
-                        channel, _callback
+                        channel,
+                        _callback,
                     )
                 except Exception:
                     logger.debug(
-                        "PostgresDialectAdapter: could not remove listener for %r "
-                        "(connection may already be closed)",
+                        "PostgresDialectAdapter: could not remove listener for %r (connection may already be closed)",
                         channel,
                         exc_info=True,
                     )

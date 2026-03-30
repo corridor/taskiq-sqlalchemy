@@ -5,6 +5,7 @@ from taskiq import TaskiqResult
 
 from taskiq_sqlalchemy.result_backend import SQLAlchemyResultBackend
 
+
 pytestmark = pytest.mark.anyio
 
 
