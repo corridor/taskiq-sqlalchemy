@@ -69,6 +69,7 @@ dev = [
     "asyncpg",   # PostgreSQL asyncpg driver (optional in local dev)
     "psycopg",   # PostgreSQL psycopg3 driver (optional in local dev)
     "oracledb",  # OracleDB driver (optional in local dev)
+    "aioodbc",   # SQL Server driver (optional in local dev)
 ]
 
 [tool.setuptools.packages.find]

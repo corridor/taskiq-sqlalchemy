@@ -1338,6 +1338,7 @@ sqlite-aiosqlite = [
 
 [package.dev-dependencies]
 dev = [
+    { name = "aioodbc" },
     { name = "aiosqlite" },
     { name = "asyncpg" },
     { name = "asyncpg-stubs" },
@@ -1370,6 +1371,7 @@ provides-extras = ["all", "postgresql-asyncpg", "postgresql-psycopg", "sqlite-ai
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "aioodbc" },
     { name = "aiosqlite" },
     { name = "asyncpg" },
     { name = "asyncpg-stubs" },
