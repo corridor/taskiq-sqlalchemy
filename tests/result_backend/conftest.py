@@ -68,8 +68,7 @@ async def manager_and_backend(
     class _Base(DeclarativeBase):
         pass
 
-    manager = SQLAlchemyManager()
-    manager.register_tables(base_classes=(_Base,))
+    manager = SQLAlchemyManager(base_classes=(_Base,))
     manager.configure(engine=async_engine)
 
     # Create schema
@@ -107,8 +106,7 @@ async def keep_results_false_backend(
     class _Base(DeclarativeBase):
         pass
 
-    manager = SQLAlchemyManager()
-    manager.register_tables(base_classes=(_Base,))
+    manager = SQLAlchemyManager(base_classes=(_Base,))
     manager.configure(engine=async_engine)
 
     async with async_engine.begin() as conn:

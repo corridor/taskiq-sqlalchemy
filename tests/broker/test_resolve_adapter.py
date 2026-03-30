@@ -15,7 +15,7 @@ def _mock_manager(dialect_name: str) -> SQLAlchemyManager:
     queue_cls = MagicMock()
 
     manager = SQLAlchemyManager.__new__(SQLAlchemyManager)
-    manager.engine = engine
+    manager._engine = engine
     manager.queue_cls = queue_cls
     manager.result_cls = MagicMock()
     manager.schedule_cls = MagicMock()

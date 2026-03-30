@@ -37,8 +37,7 @@ async def polling_manager(
     class _Base(DeclarativeBase):
         pass
 
-    manager = SQLAlchemyManager()
-    manager.register_tables(base_classes=(_Base,))
+    manager = SQLAlchemyManager(base_classes=(_Base,))
     manager.configure(engine=sqlite_engine)
 
     async with sqlite_engine.begin() as conn:

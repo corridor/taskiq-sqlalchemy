@@ -1,7 +1,14 @@
+import typing as t
+
+from taskiq_sqlalchemy.adapters.oracle import OracleDialectAdapter
+from taskiq_sqlalchemy.adapters.polling import PollingAdapter
+from taskiq_sqlalchemy.adapters.postgresql import PostgresDialectAdapter
 from taskiq_sqlalchemy.manager import SQLAlchemyManager
 
 
-def resolve_adapter(manager: SQLAlchemyManager):
+def resolve_adapter(
+    manager: SQLAlchemyManager,
+) -> t.Union[PostgresDialectAdapter, OracleDialectAdapter, PollingAdapter]:
     if manager.engine.dialect.name == "postgresql":
         from taskiq_sqlalchemy.adapters.postgresql import PostgresDialectAdapter
 
