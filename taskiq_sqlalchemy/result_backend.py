@@ -8,12 +8,14 @@ import logging
 import typing as t
 
 import sqlalchemy as sa
+from sqlalchemy.sql.dml import Insert
 from taskiq import AsyncResultBackend
 from taskiq.abc.serializer import TaskiqSerializer
 from taskiq.result import TaskiqResult
 from taskiq.serializers.pickle import PickleSerializer
 
 from taskiq_sqlalchemy.manager import SQLAlchemyManager
+from taskiq_sqlalchemy.models import TaskiqResultMixin
 
 
 _ReturnType = t.TypeVar("_ReturnType")
@@ -36,9 +38,44 @@ class SQLAlchemyResultBackend(AsyncResultBackend[_ReturnType]):
         self.keep_results = keep_results
         self.serializer = serializer or PickleSerializer()
 
-    # ------------------------------------------------------------------
-    # AsyncResultBackend protocol
-    # ------------------------------------------------------------------
+    @classmethod
+    async def build_upsert_statement(
+        cls,
+        dialect: str,
+        result_cls: type[TaskiqResultMixin],
+        values: dict,
+        update: dict,
+    ) -> Insert:
+        if dialect == "postgresql":
+            from sqlalchemy.dialects.postgresql import insert  # noqa: PLC0415
+
+            return (
+                insert(result_cls)
+                .values(**values)
+                .on_conflict_do_update(
+                    index_elements=[result_cls.task_id],
+                    set_=update,
+                )
+            )
+
+        if dialect == "sqlite":
+            from sqlalchemy.dialects.sqlite import insert  # noqa: PLC0415
+
+            return (
+                insert(result_cls)
+                .values(**values)
+                .on_conflict_do_update(
+                    index_elements=[result_cls.task_id],
+                    set_=update,
+                )
+            )
+
+        if dialect == "mysql":
+            from sqlalchemy.dialects.mysql import insert  # noqa: PLC0415
+
+            return insert(result_cls).values(**values).on_duplicate_key_update(**update)
+
+        raise NotImplementedError(f"Upsert not supported for {dialect}")
 
     async def set_result(self, task_id: str, result: TaskiqResult[_ReturnType]) -> None:
         async_engine = self.manager.engine
@@ -50,23 +87,17 @@ class SQLAlchemyResultBackend(AsyncResultBackend[_ReturnType]):
             # to a delete-then-insert, which is safe because set_result is
             # called at most once per task_id.
             dialect = async_engine.dialect.name
-            if dialect in ("postgresql",):
-                from sqlalchemy.dialects.postgresql import insert as pg_insert  # noqa: PLC0415
 
-                stmt = (
-                    pg_insert(self.manager.result_cls)
-                    .values(
-                        task_id=task_id,
-                        result=serialised,
-                        is_err=result.is_err,
-                    )
-                    .on_conflict_do_update(
-                        index_elements=["task_id"],
-                        set_={
-                            "result": serialised,
-                            "is_err": result.is_err,
-                        },
-                    )
+            result_cls = self.manager.result_cls
+            if dialect in ("postgresql", "sqlite", "myssql"):
+                stmt = await self.build_upsert_statement(
+                    dialect,
+                    result_cls,
+                    values={"task_id": task_id, "result": serialised, "is_err": result.is_err},
+                    update={
+                        "result": serialised,
+                        "is_err": result.is_err,
+                    },
                 )
             else:
                 # Generic fallback: delete then insert (safe, task results are
