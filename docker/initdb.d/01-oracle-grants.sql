@@ -2,7 +2,7 @@
 
 ALTER SESSION SET CONTAINER=taskiq;
 
-CREATE USER taskiq_user IDENTIFIED BY taskiq_pwd;
+CREATE USER taskiq_user IDENTIFIED BY gOxN5hbl7geTwgvS;
 
 -- Basic permissions
 GRANT CREATE SESSION TO taskiq_user;

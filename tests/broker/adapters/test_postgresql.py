@@ -15,7 +15,7 @@ from taskiq_sqlalchemy.adapters.postgresql import PostgresDialectAdapter
 
 pytestmark = [pytest.mark.anyio, pytest.mark.postgresql]
 
-_PG_URL = "postgresql+asyncpg://taskiq_user:taskiq_pwd@localhost:5432/taskiq"
+_PG_URL = "postgresql+asyncpg://taskiq_user:gOxN5hbl7geTwgvS@localhost:5432/taskiq"
 
 
 @pytest.fixture

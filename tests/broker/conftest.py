@@ -53,19 +53,24 @@ _ENGINE_PARAMS: list = [
         id="sqlite+aiosqlite",
     ),
     pytest.param(
-        "postgresql+asyncpg://taskiq_user:taskiq_pwd@localhost:5432/taskiq",
+        "postgresql+asyncpg://taskiq_user:gOxN5hbl7geTwgvS@localhost:5432/taskiq",
         id="postgresql+asyncpg",
         marks=pytest.mark.postgresql,
     ),
     pytest.param(
-        "postgresql+psycopg://taskiq_user:taskiq_pwd@localhost:5432/taskiq",
+        "postgresql+psycopg://taskiq_user:gOxN5hbl7geTwgvS@localhost:5432/taskiq",
         id="postgresql+psycopg",
         marks=pytest.mark.postgresql,
     ),
     pytest.param(
-        "oracle+oracledb://taskiq_user:taskiq_pwd@localhost:1521/?service_name=taskiq",
+        "oracle+oracledb://taskiq_user:gOxN5hbl7geTwgvS@localhost:1521/?service_name=taskiq",
         id="oracle+oracledb",
         marks=pytest.mark.oracle,
+    ),
+    pytest.param(
+        "mssql+aioodbc://sa:gOxN5hbl7geTwgvS@localhost:1433/taskiq?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes",
+        id="mssql+aioodbc",
+        marks=pytest.mark.mssql,
     ),
 ]
 

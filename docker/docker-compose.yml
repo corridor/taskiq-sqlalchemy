@@ -4,7 +4,7 @@ services:
     restart: always
     environment:
       POSTGRES_USER: taskiq_user
-      POSTGRES_PASSWORD: taskiq_pwd
+      POSTGRES_PASSWORD: "gOxN5hbl7geTwgvS"
       POSTGRES_DB: taskiq
     volumes:
       - postgres_data:/var/lib/postgresql/data/
@@ -23,7 +23,7 @@ services:
     restart: always
     environment:
       ORACLE_DATABASE: taskiq
-      ORACLE_PASSWORD: "PasswoRd"
+      ORACLE_PASSWORD: "gOxN5hbl7geTwgvS"
     volumes:
       - oracle_data:/opt/oracle/oradata
       - ./initdb.d/01-oracle-grants.sql:/container-entrypoint-initdb.d/01-oracle-grants.sql:ro

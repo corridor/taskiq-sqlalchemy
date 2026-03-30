@@ -23,7 +23,7 @@ from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 from taskiq_sqlalchemy.adapters.oracle import OracleDialectAdapter, _oracle_queue_name
 
 
-_ORA_URL = "oracle+oracledb://taskiq_user:taskiq_pwd@localhost:1521/?service_name=taskiq"
+_ORA_URL = "oracle+oracledb://taskiq_user:gOxN5hbl7geTwgvS@localhost:1521/?service_name=taskiq"
 
 
 @pytest.fixture
