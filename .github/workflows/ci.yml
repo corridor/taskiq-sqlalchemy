@@ -7,8 +7,14 @@ on:
   pull_request:
     branches:
       - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.event.issue.number || github.ref }}-${{ github.event_name }}
+  cancel-in-progress: true
+
 jobs:
   lint:
+    name: "Lint"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -27,3 +33,204 @@ jobs:
 
       - name: Run ruff format
         run: uvx ruff@latest format --check .
+
+  test-generic:
+    name: "Tests · Generic"
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Set up Python
+        run: uv python install 3.12
+
+      - name: Install dependencies
+        run: uv sync --dev
+
+      - name: Run generic tests
+        run: |
+          uv run pytest tests/ -v \
+            -m "not postgresql and not oracle and not mssql" \
+            --strict-markers --maxfail=10 \
+            --cov=taskiq_sqlalchemy \
+            --cov-report=xml:coverage-generic.xml
+
+      # - name: Upload coverage
+      #   uses: codecov/codecov-action@v5
+      #   with:
+      #     files: coverage-generic.xml
+      #     flags: generic
+      #     fail_ci_if_error: false
+
+  test-postgresql:
+    name: "Tests · PostgreSQL"
+    runs-on: ubuntu-latest
+    needs: lint
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Start PostgreSQL service
+        run: |
+          cd docker
+          docker compose up -d postgres
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Set up Python
+        run: uv python install 3.12
+
+      - name: Install dependencies
+        run: uv sync --dev
+      
+      - name: Wait for PostgreSQL to be healthy
+        run: |
+          cd docker
+          echo "Waiting for PostgreSQL service to become healthy..."
+          for i in $(seq 1 60); do
+            if [ "$(docker compose ps postgres --format json | jq -r '.Health')" = "healthy" ]; then
+              echo "PostgreSQL is healthy after ${i}s"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "PostgreSQL did not become healthy within 120 seconds"
+          exit 1
+
+      - name: Run postgresql tests
+        run: |
+          uv run pytest tests/ -v \
+            -m "postgresql" \
+            --strict-markers --maxfail=10 \
+            --cov=taskiq_sqlalchemy \
+            --cov-report=xml:coverage-postgresql.xml
+
+      # - name: Upload coverage
+      #   uses: codecov/codecov-action@v5
+      #   with:
+      #     files: coverage-postgresql.xml
+      #     flags: postgresql
+      #     fail_ci_if_error: false
+
+  test-oracle:
+    name: "Tests · Oracle"
+    runs-on: ubuntu-latest
+    needs: lint
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Start Oracle service
+        run: |
+          cd docker
+          docker compose up -d oracle
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Set up Python
+        run: uv python install 3.12
+
+      - name: Install dependencies
+        run: uv sync --dev
+
+      - name: Wait for Oracle to be healthy
+        run: |
+          cd docker
+          echo "Waiting for Oracle service to become healthy..."
+          for i in $(seq 1 60); do
+            if [ "$(docker compose ps oracle --format json | jq -r '.Health')" = "healthy" ]; then
+              echo "Oracle is healthy after ${i}s"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Oracle did not become healthy within 120 seconds"
+          exit 1
+
+      - name: Run oracle tests
+        run: |
+          uv run pytest tests/ -v \
+            -m "oracle" \
+            --strict-markers --maxfail=10 \
+            --cov=taskiq_sqlalchemy \
+            --cov-report=xml:coverage-oracle.xml
+
+      # - name: Upload coverage
+      #   uses: codecov/codecov-action@v5
+      #   with:
+      #     files: coverage-oracle.xml
+      #     flags: oracle
+      #     fail_ci_if_error: false
+
+  test-mssql:
+    name: "Tests · MSSQL"
+    runs-on: ubuntu-latest
+    needs: lint
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Start MSSQL service
+        run: |
+          cd docker
+          docker compose up -d mssql.configurator
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Set up Python
+        run: uv python install 3.12
+
+      - name: Install dependencies
+        run: uv sync --dev
+      
+      - name: Install MS ODBC driver
+        run: |
+          # See: https://learn.microsoft.com/en-us/sql/connect/odbc/linux-mac/installing-the-microsoft-odbc-driver-for-sql-server
+          if ! [[ "18.04 20.04 22.04 24.04 25.10" == *"$(grep VERSION_ID /etc/os-release | cut -d '"' -f 2)"* ]];
+          then
+              echo "Ubuntu $(grep VERSION_ID /etc/os-release | cut -d '"' -f 2) is not currently supported.";
+              exit;
+          fi
+
+          curl -sSL -O https://packages.microsoft.com/config/ubuntu/$(grep VERSION_ID /etc/os-release | cut -d '"' -f 2)/packages-microsoft-prod.deb
+          sudo dpkg -i packages-microsoft-prod.deb
+          rm packages-microsoft-prod.deb
+
+          sudo apt-get update
+          sudo ACCEPT_EULA=Y apt-get install -y msodbcsql18
+          echo "$PATH:/opt/mssql-tools18/bin" >> $GITHUB_PATH
+
+      - name: Wait for MSSQL to be healthy
+        run: |
+          cd docker
+          echo "Waiting for MSSQL service to become healthy..."
+          for i in $(seq 1 60); do
+            if [ "$(docker compose ps mssql --format json | jq -r '.Health')" = "healthy" ]; then
+              echo "MSSQL is healthy after ${i}s"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "MSSQL did not become healthy within 120 seconds"
+          exit 1
+
+      - name: Run mssql tests
+        run: |
+          uv run pytest tests/ -v \
+            -m "mssql" \
+            --strict-markers --maxfail=10 \
+            --cov=taskiq_sqlalchemy \
+            --cov-report=xml:coverage-mssql.xml
+
+      # - name: Upload coverage
+      #   uses: codecov/codecov-action@v5
+      #   with:
+      #     files: coverage-mssql.xml
+      #     flags: mssql
+      #     fail_ci_if_error: false
