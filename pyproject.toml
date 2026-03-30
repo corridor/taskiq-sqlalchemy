@@ -37,13 +37,14 @@ dependencies = ["taskiq>=0.11.7", 'sqlalchemy>=2', 'anyio>=4']
 
 [project.optional-dependencies]
 all = [
-    "taskiq_sqlalchemy[postgresql-asyncpg,postgresql-psycopg,sqlite-aiosqlite,oracle-oracledb]",
+    "taskiq_sqlalchemy[postgresql-asyncpg,postgresql-psycopg,sqlite-aiosqlite,oracle-oracledb,mssql-aioodbc]",
 ]
 
 postgresql-asyncpg = ["asyncpg"]
 postgresql-psycopg = ["psycopg[binary,pool]"]
 sqlite-aiosqlite = ["aiosqlite"]
 oracle-oracledb = ["oracledb"]
+mssql-aioodbc = ["aioodbc"]
 
 [project.urls]
 Homepage = "https://github.com/corridor/taskiq-sqlalchemy"
@@ -89,6 +90,7 @@ universal = true
 markers = [
     "postgresql: tests that require a running PostgreSQL server",
     "oracle: tests that require a running OracleDB server",
+    "mssql: tests that require a running SQL Server instance",
 ]
 
 [tool.ruff]
