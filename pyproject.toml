@@ -33,29 +33,23 @@ classifiers = [
     "Typing :: Typed",
     "Operating System :: OS Independent",
 ]
-keywords = [
-    "taskiq",
-    "tasks",
-    "distributed",
-    "async",
-    "postgresql",
-    "asyncpg",
-    "psycopg3",
-    "sqlalchemy",
-]
-
 dependencies = ["taskiq>=0.11.7", 'sqlalchemy>=2', 'anyio>=4']
 
 [project.optional-dependencies]
-all = ["taskiq_sqlalchemy[postgresql,sqlite,oracle]"]
+all = [
+    "taskiq_sqlalchemy[postgresql-asyncpg,postgresql-psycopg,sqlite-aiosqlite,oracle-oracledb]",
+]
 
-postgresql = ["asyncpg", "psycopg[binary,pool]"]
-sqlite = ["aiosqlite"]
-oracle = ["oracledb"]
+postgresql-asyncpg = ["asyncpg"]
+postgresql-psycopg = ["psycopg[binary,pool]"]
+sqlite-aiosqlite = ["aiosqlite"]
+oracle-oracledb = ["oracledb"]
 
 [project.urls]
 Homepage = "https://github.com/corridor/taskiq-sqlalchemy"
 Documentation = "https://github.com/corridor/taskiq-sqlalchemy"
+"Source Code" = "https://github.com/corridor/taskiq-sqlalchemy"
+"Issue Tracker" = "https://github.com/corridor/taskiq-sqlalchemy/issues"
 
 [dependency-groups]
 dev = [
@@ -151,14 +145,4 @@ extend-immutable-calls = ["taskiq_dependencies.Depends", "taskiq.TaskiqDepends"]
     "SLF001", # Private member accessed
     "S311",   # Standard pseudo-random generators are not suitable for security/cryptographic purposes
     "D101",   # Missing docstring in public class
-]
-"scripts/*" = [
-    "S101",   # Use of assert detected
-    "S301",   # Use of pickle detected
-    "D103",   # Missing docstring in public function
-    "SLF001", # Private member accessed
-    "S311",   # Standard pseudo-random generators are not suitable for security/cryptographic purposes
-    "D101",   # Missing docstring in public class
-    "T201",   # Use of assert detected
-    "S603",   # Use of subprocess.run detected
 ]

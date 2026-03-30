@@ -1236,14 +1236,16 @@ all = [
     { name = "oracledb" },
     { name = "psycopg", extra = ["binary", "pool"] },
 ]
-oracle = [
+oracle-oracledb = [
     { name = "oracledb" },
 ]
-postgresql = [
+postgresql-asyncpg = [
     { name = "asyncpg" },
+]
+postgresql-psycopg = [
     { name = "psycopg", extra = ["binary", "pool"] },
 ]
-sqlite = [
+sqlite-aiosqlite = [
     { name = "aiosqlite" },
 ]
 
@@ -1267,16 +1269,16 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "aiosqlite", marker = "extra == 'sqlite'" },
+    { name = "aiosqlite", marker = "extra == 'sqlite-aiosqlite'" },
     { name = "anyio", specifier = ">=4" },
-    { name = "asyncpg", marker = "extra == 'postgresql'" },
-    { name = "oracledb", marker = "extra == 'oracle'" },
-    { name = "psycopg", extras = ["binary", "pool"], marker = "extra == 'postgresql'" },
+    { name = "asyncpg", marker = "extra == 'postgresql-asyncpg'" },
+    { name = "oracledb", marker = "extra == 'oracle-oracledb'" },
+    { name = "psycopg", extras = ["binary", "pool"], marker = "extra == 'postgresql-psycopg'" },
     { name = "sqlalchemy", specifier = ">=2" },
     { name = "taskiq", specifier = ">=0.11.7" },
-    { name = "taskiq-sqlalchemy", extras = ["postgresql", "sqlite", "oracle"], marker = "extra == 'all'" },
+    { name = "taskiq-sqlalchemy", extras = ["postgresql-asyncpg", "postgresql-psycopg", "sqlite-aiosqlite", "oracle-oracledb"], marker = "extra == 'all'" },
 ]
-provides-extras = ["all", "postgresql", "sqlite", "oracle"]
+provides-extras = ["all", "postgresql-asyncpg", "postgresql-psycopg", "sqlite-aiosqlite", "oracle-oracledb"]
 
 [package.metadata.requires-dev]
 dev = [
