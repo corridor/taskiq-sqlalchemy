@@ -77,10 +77,31 @@ services:
     networks:
       - default
 
+  myssql:
+    image: mysql:latest
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: "S3cureP@ssw0rd"
+      MYSQL_DATABASE: taskiq
+      MYSQL_USER: taskiq_user
+      MYSQL_PASSWORD: "gOxN5hbl7geTwgvS"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    ports:
+      - 3306:3306
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      retries: 10
+      timeout: 3s
+    networks:
+      - default
+
 volumes:
   postgres_data:
   oracle_data:
   mssql_data:
+  mysql_data:
 networks:
   default:
     driver: bridge

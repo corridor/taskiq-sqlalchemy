@@ -36,6 +36,11 @@ _ENGINE_PARAMS: list = [
         id="mssql+aioodbc",
         marks=pytest.mark.mssql,
     ),
+    pytest.param(
+        "mysql+aiomysql://taskiq_user:gOxN5hbl7geTwgvS@localhost:3306/taskiq",
+        id="mysql+aiomysql",
+        marks=pytest.mark.mysql,
+    ),
 ]
 
 

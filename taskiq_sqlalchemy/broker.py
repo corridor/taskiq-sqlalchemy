@@ -98,15 +98,31 @@ class SQLAlchemyBroker(AsyncBroker):
         Fetch and deserialise one message, then delete it from the queue.
         """
         async with self.manager.engine.begin() as conn:
-            result = await conn.execute(
-                sa.delete(self.manager.queue_cls)
-                .filter_by(task_id=task_id, channel=self.channel_name)
-                .returning(self.manager.queue_cls.message),
-            )
-            row = result.first()
-            if row is None:
-                # Another worker already claimed it
-                return None
+            if self.manager.engine.dialect.name == "mysql":
+                # MySQL does not support DELETE .. RETURNING
+                # SELECT FOR UPDATE SKIP LOCKED atomically claims the row.
+                result = await conn.execute(
+                    sa.select(self.manager.queue_cls)
+                    .filter_by(task_id=task_id, channel=self.channel_name)
+                    .with_for_update(skip_locked=True)
+                )
+                row = result.first()
+                if row is None:
+                    # Another worker already locked/deleted it
+                    return None
+                await conn.execute(
+                    sa.delete(self.manager.queue_cls).filter_by(task_id=task_id, channel=self.channel_name)
+                )
+            else:
+                result = await conn.execute(
+                    sa.delete(self.manager.queue_cls)
+                    .filter_by(task_id=task_id, channel=self.channel_name)
+                    .returning(self.manager.queue_cls.message)
+                )
+                row = result.first()
+                if row is None:
+                    # Another worker already claimed it
+                    return None
 
         async def ack() -> None:
             # No-op: the row was already deleted when claimed.

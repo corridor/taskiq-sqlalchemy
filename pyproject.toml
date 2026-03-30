@@ -37,7 +37,7 @@ dependencies = ["taskiq>=0.11.7", 'sqlalchemy>=2', 'anyio>=4']
 
 [project.optional-dependencies]
 all = [
-    "taskiq_sqlalchemy[postgresql-asyncpg,postgresql-psycopg,sqlite-aiosqlite,oracle-oracledb,mssql-aioodbc]",
+    "taskiq_sqlalchemy[postgresql-asyncpg,postgresql-psycopg,sqlite-aiosqlite,oracle-oracledb,mssql-aioodbc,mysql-aiomysql]",
 ]
 
 postgresql-asyncpg = ["asyncpg"]
@@ -45,6 +45,7 @@ postgresql-psycopg = ["psycopg[binary,pool]"]
 sqlite-aiosqlite = ["aiosqlite"]
 oracle-oracledb = ["oracledb"]
 mssql-aioodbc = ["aioodbc"]
+mysql-aiomysql = ["aiomysql"]
 
 [project.urls]
 Homepage = "https://github.com/corridor/taskiq-sqlalchemy"
@@ -70,6 +71,7 @@ dev = [
     "psycopg",   # PostgreSQL psycopg3 driver (optional in local dev)
     "oracledb",  # OracleDB driver (optional in local dev)
     "aioodbc",   # SQL Server driver (optional in local dev)
+    "aiomysql",  # MySQL driver (optional in local dev)
 ]
 
 [tool.setuptools.packages.find]
@@ -92,6 +94,7 @@ markers = [
     "postgresql: tests that require a running PostgreSQL server",
     "oracle: tests that require a running OracleDB server",
     "mssql: tests that require a running SQL Server instance",
+    "mysql: tests that require a running MySQL server",
 ]
 
 [tool.ruff]
@@ -151,9 +154,6 @@ ignore = [
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
-
-[tool.ruff.lint.flake8-bugbear]
-extend-immutable-calls = ["taskiq_dependencies.Depends", "taskiq.TaskiqDepends"]
 
 [tool.ruff.lint.flake8-tidy-imports.banned-api]
 "__future__.annotations".msg = "__future__.annotations is discouraged. See PEP-649 and PEP-749"
